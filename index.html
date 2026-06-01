@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3522法律公益分享平台通訊錄</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: #eef5ec; color: #1c3320; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #2a5535 0%, #3f6e4a 100%);
+    border-bottom: 2px solid #6fa870;
+    padding: 22px 28px;
+    display: flex; align-items: center; justify-content: center; gap: 16px; text-align: center;
+  }
+  .header-district { font-size: 1rem; color: #9dbfa0; letter-spacing: .1em; margin-bottom: 4px; }
+  header h1 { font-size: 2.2rem; font-weight: 800; color: #e4f2e4; letter-spacing: .06em; line-height: 1.2; }
+  .header-sub { font-size: 0.92rem; color: #7aaa80; margin-top: 5px; letter-spacing: .06em; }
+
+  /* ── Tab navigation ── */
+  .tabs {
+    background: #345e3d;
+    border-bottom: 2px solid #4a7855;
+    display: flex; gap: 0; padding: 0 20px;
+    position: sticky; top: 0; z-index: 20;
+    box-shadow: 0 2px 12px rgba(0,0,0,.18);
+  }
+  .tab-btn {
+    background: none; border: none; cursor: pointer;
+    color: #9dbfa0; font-size: 0.92rem; font-family: inherit;
+    padding: 13px 22px; letter-spacing: .05em;
+    border-bottom: 3px solid transparent;
+    transition: color .2s, border-color .2s;
+    margin-bottom: -2px;
+  }
+  .tab-btn:hover { color: #c8e4c8; }
+  .tab-btn.active { color: #ffffff; border-bottom-color: #6fa870; font-weight: 700; }
+
+  .toolbar {
+    background: #f7fdf5; padding: 12px 20px;
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    border-bottom: 1px solid #c2d9c3;
+    position: sticky; top: 0; z-index: 10;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  }
+  .toolbar input, .toolbar select {
+    background: #ffffff; border: 1px solid #c2d9c3; border-radius: 6px;
+    padding: 7px 11px; font-size: 0.88rem; color: #2a4830;
+    outline: none; transition: border .2s;
+  }
+  .toolbar input::placeholder { color: #8aaa90; }
+  .toolbar input:focus, .toolbar select:focus { border-color: #6fa870; }
+  .toolbar select option { background: #ffffff; }
+  .toolbar input { flex: 1; min-width: 180px; }
+  .toolbar select { min-width: 160px; }
+  #count { margin-left: auto; font-size: 0.82rem; color: #7a9480; white-space: nowrap; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(285px, 1fr)); gap: 18px; padding: 22px; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #c2d9c3;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(42,85,53,.09);
+    cursor: pointer; overflow: hidden;
+    transition: box-shadow .25s, transform .18s, border-color .25s;
+    position: relative;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #2a5535, #6fa870, #9dc49e, #6fa870, #2a5535);
+    opacity: 0; transition: opacity .25s;
+  }
+  .card:hover { box-shadow: 0 6px 24px rgba(42,85,53,.16); transform: translateY(-3px); border-color: #6fa87088; }
+  .card:hover::before { opacity: 1; }
+  .card.open { border-color: #6fa870; box-shadow: 0 8px 28px rgba(111,168,112,.20); }
+  .card.open::before { opacity: 1; }
+
+  .card-front { padding: 20px 20px 16px; }
+
+  .company-name {
+    font-size: 1rem; font-weight: 700; color: #1c3320;
+    margin-bottom: 14px; line-height: 1.4;
+    border-bottom: 1px solid #e4efe5; padding-bottom: 12px;
+  }
+
+  .person-row { display: flex; align-items: center; gap: 13px; margin-bottom: 12px; }
+  .initials {
+    width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #2a5535, #4a7855);
+    color: #9dc49e; font-size: 1.15rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(42,85,53,.25);
+  }
+  .person-info { flex: 1; min-width: 0; }
+  .name { font-size: 1.05rem; font-weight: 700; color: #1c3320; }
+  .nick { font-size: 0.78rem; color: #7a9480; margin-top: 1px; }
+
+  .arrow {
+    color: #6fa870; font-size: 0.7rem; flex-shrink: 0;
+    transition: transform .3s; margin-left: auto;
+  }
+  .card.open .arrow { transform: rotate(180deg); }
+
+  .meta { display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; }
+  .meta-row { display: flex; gap: 8px; align-items: flex-start; }
+  .meta-label { color: #7a9480; min-width: 56px; flex-shrink: 0; padding-top: 2px; }
+  .meta-val { color: #2a4830; }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag {
+    background: #e8f5e8; color: #2e6038;
+    border: 1px solid #b8d9b844;
+    font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; white-space: nowrap;
+  }
+
+  .card-expand {
+    max-height: 0; overflow: hidden;
+    transition: max-height .4s ease, padding .4s ease;
+    background: #f5fcf4;
+    border-top: 1px solid transparent;
+  }
+  .card.open .card-expand {
+    max-height: 600px; padding: 14px 20px 18px;
+    border-top-color: #d4e9d5;
+  }
+  .expand-row { display: flex; gap: 10px; font-size: 0.83rem; padding: 6px 0; border-bottom: 1px solid #e4efe5; }
+  .expand-row:last-child { border-bottom: none; }
+  .expand-row .label { color: #7a9480; min-width: 68px; flex-shrink: 0; }
+  .expand-row .val { color: #1c3320; word-break: break-all; white-space: pre-wrap; }
+  .expand-row a { color: #3f6e4a; text-decoration: none; }
+  .expand-row a:hover { text-decoration: underline; }
+
+  .no-result { text-align: center; color: #7a9480; padding: 60px 20px; font-size: 1rem; grid-column: 1/-1; }
+
+  /* ── 組織表 ── */
+  .org-section { padding: 28px 22px 10px; }
+  .org-role-label {
+    font-size: 0.78rem; font-weight: 700; letter-spacing: .12em;
+    color: #7a9480; text-transform: uppercase;
+    border-bottom: 1px solid #c2d9c3; padding-bottom: 8px; margin-bottom: 16px;
+  }
+  .org-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .org-card {
+    background: #fff; border-radius: 14px; padding: 20px;
+    border: 1px solid #c2d9c3;
+    box-shadow: 0 2px 12px rgba(42,85,53,.09);
+    position: relative; overflow: hidden;
+  }
+  .org-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, #2a5535, #6fa870, #9dc49e, #6fa870, #2a5535);
+  }
+  .org-role-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #2a5535, #4a7855);
+    color: #9dc49e; font-size: 0.72rem; font-weight: 800;
+    padding: 3px 10px; border-radius: 10px; letter-spacing: .08em;
+    margin-bottom: 12px;
+  }
+  .org-name { font-size: 1.1rem; font-weight: 800; color: #1c3320; }
+  .org-nick { font-size: 0.8rem; color: #7a9480; margin-top: 2px; margin-bottom: 12px; }
+  .org-meta { font-size: 0.82rem; display: flex; flex-direction: column; gap: 5px; }
+  .org-meta-row { display: flex; gap: 8px; align-items: flex-start; }
+  .org-meta-lbl { color: #7a9480; min-width: 52px; flex-shrink: 0; padding-top: 1px; }
+  .org-meta-val { color: #2a4830; }
+  .org-meta-val a { color: #3f6e4a; text-decoration: none; }
+  .org-meta-val a:hover { text-decoration: underline; }
+  .org-empty {
+    color: #8aaa90; font-size: 0.88rem; padding: 24px 0;
+    text-align: center; grid-column: 1/-1;
+  }
+
+  /* ── 平台緣起 ── */
+  #tab-origin { max-width: 760px; margin: 0 auto; padding: 36px 24px 48px; }
+  .origin-intro {
+    background: #f5fcf4; border: 1px solid #c2d9c3;
+    border-left: 4px solid #6fa870;
+    border-radius: 10px; padding: 22px 24px; margin-bottom: 36px;
+    font-size: 0.95rem; line-height: 1.9; color: #2a4830;
+  }
+  .origin-timeline { position: relative; padding-left: 28px; }
+  .origin-timeline::before {
+    content: ''; position: absolute; left: 7px; top: 6px; bottom: 6px;
+    width: 2px; background: linear-gradient(180deg, #6fa870, #9dc49e);
+  }
+  .timeline-item { position: relative; margin-bottom: 30px; }
+  .timeline-dot {
+    position: absolute; left: -24px; top: 4px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #6fa870; border: 2px solid #eef5ec;
+    box-shadow: 0 0 0 3px rgba(111,168,112,.25);
+  }
+  .timeline-year {
+    display: inline-block;
+    background: linear-gradient(135deg, #2a5535, #4a7855);
+    color: #e4f2e4; font-size: 0.75rem; font-weight: 800;
+    padding: 3px 10px; border-radius: 8px; letter-spacing: .06em;
+    margin-bottom: 8px;
+  }
+  .timeline-text {
+    background: #f5fcf4; border: 1px solid #c2d9c3; border-radius: 8px;
+    padding: 14px 16px; font-size: 0.88rem; line-height: 1.8; color: #2a4830;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-district">3522 District</div>
+    <h1>3522法律公益分享平台</h1>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('origin', this)">平台緣起</button>
+  <button class="tab-btn" onclick="switchTab('org', this)">組織表</button>
+  <button class="tab-btn" onclick="switchTab('directory', this)">會員通訊錄</button>
+</div>
+
+<!-- 會員通訊錄 -->
+<div id="tab-directory" style="display:none">
+  <div class="toolbar">
+    <input type="search" id="search" placeholder="搜尋姓名、公司、Nick Name…">
+    <select id="filterIndustry">
+      <option value="">全部職業類別</option>
+      <option value="律師/法律事務所">律師/法律事務所</option>
+      <option value="公證人">公證人</option>
+      <option value="法律顧問">法律顧問</option>
+      <option value="司法官/法院">司法官/法院</option>
+      <option value="企業法務">企業法務</option>
+      <option value="學術/研究">學術/研究</option>
+      <option value="其他">其他</option>
+    </select>
+    <select id="filterClub">
+      <option value="">全部扶輪社</option>
+    </select>
+    <span id="count"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- 組織表 -->
+<div id="tab-org" style="display:none">
+  <div class="org-section">
+    <div class="org-role-label">主委</div>
+    <div class="org-grid">
+      <div class="org-card">
+        <div class="org-role-badge">主委</div>
+        <div class="org-name">陳思合</div>
+        <div class="org-nick">P.P Brenda</div>
+        <div class="org-meta">
+          <div class="org-meta-row"><span class="org-meta-lbl">事務所</span><span class="org-meta-val">合曜國際法律事務所</span></div>
+          <div class="org-meta-row"><span class="org-meta-lbl">職稱</span><span class="org-meta-val">主持律師</span></div>
+          <div class="org-meta-row"><span class="org-meta-lbl">扶輪社</span><span class="org-meta-val">10-2東林社</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="org-role-label">執行長</div>
+    <div class="org-grid">
+      <div class="org-card">
+        <div class="org-role-badge">執行長</div>
+        <div class="org-name">鄭昱仁</div>
+        <div class="org-nick">Eason</div>
+        <div class="org-meta">
+          <div class="org-meta-row"><span class="org-meta-lbl">事務所</span><span class="org-meta-val">合曜國際法律事務所</span></div>
+          <div class="org-meta-row"><span class="org-meta-lbl">職稱</span><span class="org-meta-val">所長</span></div>
+          <div class="org-meta-row"><span class="org-meta-lbl">扶輪社</span><span class="org-meta-val">1-1東區社</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 平台緣起 -->
+<div id="tab-origin">
+  <div class="origin-intro">
+    本平台發想自諸多扶輪先進著眼於台灣社會所面臨家族與企業傳承轉型之課題，如何在法律專業層面給予更多的協助，後來在與總監Capital的支持下成立此平台，旨在連結 3522 地區內跨世代的企業領袖與法律專業人士，從解決社友、寶尊眷、二代，各層面法律問題的公益角度出發，建立一個互信、共享、共榮的法律專業人士與家族與企業傳承生態系。透過專業資源與實際經驗的交流，預防個人、家族及企業所會面臨的法律風險及協助爭端解決，並縮短、解決家族與企業在世代交替中的陣痛，確保家族財富與扶輪精神得以永續傳承。
+  </div>
+</div>
+
+<script>
+const members = [
+  {
+    club: "10-2東林社",
+    nick: "P.P Brenda",
+    name: "陳思合",
+    company: "合曜國際法律事務所",
+    title: "主持律師",
+    industry: "律師/法律事務所",
+    experience: "神盾股份有限公司獨立董事",
+    lineId: "",
+    phone: "",
+    service: "",
+    email: ""
+  },
+  {
+    club: "1-1東區社",
+    nick: "Eason",
+    name: "鄭昱仁",
+    company: "合曜國際法律事務所",
+    title: "所長",
+    industry: "律師/法律事務所",
+    experience: "前臺灣高等法院重大金融專庭法官",
+    lineId: "",
+    phone: "",
+    service: "",
+    email: ""
+  }
+];
+
+function getInitials(name) {
+  return name ? name.slice(-2) : "?";
+}
+
+function buildClubFilter() {
+  const clubs = [...new Set(members.map(m => m.club).filter(Boolean))].sort();
+  const sel = document.getElementById('filterClub');
+  clubs.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+function renderCard(m, idx) {
+  const hasExpand = m.experience || m.lineId || m.phone || m.service || m.email;
+  return `
+    <div class="card" id="card-${idx}" onclick="toggleCard(${idx})">
+      <div class="card-front">
+        <div class="company-name">${m.company || "—"}</div>
+        <div class="person-row">
+          <div class="person-info">
+            <div class="name">${m.name}</div>
+            <div class="nick">${m.nick || ""}</div>
+          </div>
+          ${hasExpand ? '<span class="arrow">▼</span>' : ''}
+        </div>
+        <div class="meta">
+          ${m.title ? `<div class="meta-row"><span class="meta-label">職稱</span><span class="meta-val">${m.title}</span></div>` : ""}
+          ${m.club ? `<div class="meta-row"><span class="meta-label">扶輪社</span><span class="meta-val">${m.club}</span></div>` : ""}
+          ${m.industry ? `<div class="meta-row"><span class="meta-label">類別</span><span class="meta-val"><div class="tags"><span class="tag">${m.industry}</span></div></span></div>` : ""}
+        </div>
+      </div>
+      ${hasExpand ? `
+      <div class="card-expand">
+        ${m.experience ? `<div class="expand-row"><span class="label">經歷</span><span class="val">${m.experience}</span></div>` : ""}
+        ${m.service ? `<div class="expand-row"><span class="label">服務對象</span><span class="val">${m.service}</span></div>` : ""}
+        ${m.phone ? `<div class="expand-row"><span class="label">電話</span><span class="val">${m.phone}</span></div>` : ""}
+        ${m.lineId ? `<div class="expand-row"><span class="label">Line ID</span><span class="val">${m.lineId}</span></div>` : ""}
+        ${m.email ? `<div class="expand-row"><span class="label">Email</span><span class="val"><a href="mailto:${m.email}">${m.email}</a></span></div>` : ""}
+      </div>` : ""}
+    </div>`;
+}
+
+function toggleCard(idx) {
+  document.getElementById(`card-${idx}`).classList.toggle("open");
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['origin', 'org', 'directory'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === tab ? '' : 'none';
+  });
+}
+
+function filterAndRender() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const ind = document.getElementById('filterIndustry').value;
+  const club = document.getElementById('filterClub').value;
+  const filtered = members.filter(m => {
+    const matchQ = !q || [m.name, m.company, m.nick, m.title, m.experience].some(v => v && v.toLowerCase().includes(q));
+    const matchInd = !ind || m.industry === ind;
+    const matchClub = !club || m.club === club;
+    return matchQ && matchInd && matchClub;
+  });
+  const grid = document.getElementById('grid');
+  grid.innerHTML = filtered.length
+    ? filtered.map(m => renderCard(m, members.indexOf(m))).join('')
+    : '<div class="no-result">找不到符合的會員</div>';
+  document.getElementById('count').textContent = `共 ${filtered.length} 位`;
+}
+
+buildClubFilter();
+filterAndRender();
+['search', 'filterIndustry', 'filterClub'].forEach(id => {
+  document.getElementById(id).addEventListener('input', filterAndRender);
+});
+</script>
+</body>
+</html>
