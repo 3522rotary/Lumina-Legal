@@ -227,11 +227,13 @@
     <select id="filterIndustry">
       <option value="">全部職業類別</option>
       <option value="律師/法律事務所">律師/法律事務所</option>
-      <option value="公證人">公證人</option>
       <option value="法律顧問">法律顧問</option>
-      <option value="司法官/法院">司法官/法院</option>
+      <option value="公證人">公證人</option>
       <option value="企業法務">企業法務</option>
-      <option value="學術/研究">學術/研究</option>
+      <option value="資產傳承">資產傳承</option>
+      <option value="財務規劃">財務規劃</option>
+      <option value="稅務規劃">稅務規劃</option>
+      <option value="跨境資產配置">跨境資產配置</option>
       <option value="其他">其他</option>
     </select>
     <select id="filterClub">
@@ -289,12 +291,12 @@ const members = [
     name: "陳思合",
     company: "合曜國際法律事務所",
     title: "主持律師",
-    industry: "律師/法律事務所",
+    industry: ["律師/法律事務所"],
     experience: "神盾股份有限公司獨立董事",
     lineId: "",
     phone: "",
     service: "",
-    email: ""
+    email: "",
   },
   {
     club: "1-1東區社",
@@ -302,13 +304,79 @@ const members = [
     name: "鄭昱仁",
     company: "合曜國際法律事務所",
     title: "所長",
-    industry: "律師/法律事務所",
+    industry: ["律師/法律事務所"],
     experience: "前臺灣高等法院重大金融專庭法官",
     lineId: "",
     phone: "",
     service: "",
-    email: ""
-  }
+    email: "",
+  },
+  {
+    club: "1-7松仁社",
+    nick: "Peter Lawyer",
+    name: "徐正坤",
+    company: "正思法律事務所",
+    title: "主持律師",
+    industry: ["律師/法律事務所"],
+    experience: "第一分區AG/執業律師30年",
+    lineId: "peterhsu1971",
+    phone: "920126263",
+    service: "企業及個人",
+    email: "peter1971.tw@gmail.com",
+  },
+  {
+    club: "8-3同領社",
+    nick: "Ethan",
+    name: "吳孟修",
+    company: "睿豐家族辦公室有限公司",
+    title: "負責人/律師",
+    industry: ["資產傳承", "財務規劃", "稅務規劃", "跨境資產配置"],
+    experience: "家族信託規劃顧問師認證 宇恒法律事務所企業保險暨個人資產規劃部 | 顧問律師 保險經紀公司 | 業務經理 六合法律事務所 | 律師 監察院監察調查處 | 調查員 監察院公職人員財產申報處 | 科員 法制人員訓練班訓練及格",
+    lineId: "faustino224",
+    phone: "0975-891993",
+    service: "資產6000萬以上，想要做好資產傳承、富過三代的企業主、專業人士、房東",
+    email: "faustino224@gmail.com",
+  },
+  {
+    club: "2-10璽愛社",
+    nick: "Daphne",
+    name: "鍾依庭",
+    company: "乘熙法律事務所",
+    title: "主持律師",
+    industry: ["律師/法律事務所"],
+    experience: "可道律師事務所合夥律師",
+    lineId: "eatting217",
+    phone: "233433959",
+    service: "一般民眾、公司行號",
+    email: "i-ting217@hotmail.com",
+  },
+  {
+    club: "2-10璽愛社",
+    nick: "Elaine",
+    name: "張綺耘",
+    company: "見澄法律事務所",
+    title: "主持律師",
+    industry: ["律師/法律事務所"],
+    experience: "巨展法律事務所律師 呈昱律師事務所律師 信託業業務人員信託業務專業測業合格
+ 新北市都市更新推動師 勞動部工作場所性騷擾調查專業人才庫 中華民國仲裁協會調解人 台北市議員服務處諮詢律師",
+    lineId: "920803373",
+    phone: "920803373",
+    service: "一般民刑事訴訟需求、中小企業經營者",
+    email: "chienchenglaw@gmail.com",
+  },
+  {
+    club: "8-7天際社",
+    nick: "Iris",
+    name: "涂肇元",
+    company: "睿豐家族辦公室有限公司",
+    title: "執行總監",
+    industry: ["資產傳承", "稅務規劃", "跨境資產配置"],
+    experience: "保險經紀人公司業務經理、中國建設銀行台北分行綜合管理、國泰世華銀行人資",
+    lineId: "chaoyuantu",
+    phone: "988039925",
+    service: "中小企業主、專業人士、企業高階主管、資產5000萬以上的人士",
+    email: "iristu@prowealth.com.tw",
+  },
 ];
 
 function getInitials(name) {
@@ -342,7 +410,7 @@ function renderCard(m, idx) {
         <div class="meta">
           ${m.title ? `<div class="meta-row"><span class="meta-label">職稱</span><span class="meta-val">${m.title}</span></div>` : ""}
           ${m.club ? `<div class="meta-row"><span class="meta-label">扶輪社</span><span class="meta-val">${m.club}</span></div>` : ""}
-          ${m.industry ? `<div class="meta-row"><span class="meta-label">類別</span><span class="meta-val"><div class="tags"><span class="tag">${m.industry}</span></div></span></div>` : ""}
+          ${m.industry && m.industry.length ? `<div class="meta-row"><span class="meta-label">類別</span><span class="meta-val"><div class="tags">${m.industry.map(i => `<span class="tag">${i}</span>`).join('')}</div></span></div>` : ""}
         </div>
       </div>
       ${hasExpand ? `
@@ -374,7 +442,7 @@ function filterAndRender() {
   const club = document.getElementById('filterClub').value;
   const filtered = members.filter(m => {
     const matchQ = !q || [m.name, m.company, m.nick, m.title, m.experience].some(v => v && v.toLowerCase().includes(q));
-    const matchInd = !ind || m.industry === ind;
+    const matchInd = !ind || m.industry.includes(ind);
     const matchClub = !club || m.club === club;
     return matchQ && matchInd && matchClub;
   });
